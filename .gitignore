@@ -1,0 +1,5 @@
+venv
+.pytest_chache
+черновик.txt
+.idea
+.coverage
