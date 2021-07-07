@@ -46,12 +46,28 @@ class TestPosts(unittest.TestCase):
 
         assert resp.status_code == http.HTTPStatus.CREATED
 
+    def test_user_register_validation_error(self):
+        client = app.test_client()
+        data = {"name": "alex", "email": "alexgoogle.com", "password": "123456"}
+        resp = client.post('/register',
+                           data=json.dumps(data),
+                           content_type='application/json')
+
+        assert resp.status_code == http.HTTPStatus.BAD_REQUEST
+
     def test_user_login(self):
         TestPosts.create_user()
         client = app.test_client()
         data = {"email": "alex@google.com", "password": "123456"}
         resp = client.post('/login', data=json.dumps(data), content_type='application/json')
         assert resp.status_code == http.HTTPStatus.OK
+
+    def test_user_login_validation_error(self):
+        TestPosts.create_user()
+        client = app.test_client()
+        data = {"email": "alexgoogle.com", "password": "123456"}
+        resp = client.post('/login', data=json.dumps(data), content_type='application/json')
+        assert resp.status_code == http.HTTPStatus.BAD_REQUEST
 
     def test_post_create(self):
         json_with_token = TestPosts.create_user()
@@ -64,6 +80,17 @@ class TestPosts(unittest.TestCase):
 
         assert resp.status_code == http.HTTPStatus.CREATED
 
+    def test_post_create_validation_error(self):
+        json_with_token = TestPosts.create_user()
+        header = {"Authorization": "Bearer " + json_with_token}
+        client = app.test_client()
+        data = {"title": "", "content": "some content"}
+        resp = client.post('/api',
+                           data=json.dumps(data), headers=header,
+                           content_type='application/json')
+
+        assert resp.status_code == http.HTTPStatus.BAD_REQUEST
+
     def test_post_like_unlike_dislike(self):
         TestPosts.create_post(name="unique", email="unique@email.com")
         json_with_token = TestPosts.create_user()
@@ -74,6 +101,16 @@ class TestPosts(unittest.TestCase):
 
         assert resp.json["liked"] == 1
         assert resp.status_code == http.HTTPStatus.CREATED
+
+    def test_post_like_unlike_dislike_no_posts(self):
+        TestPosts.create_post(name="unique", email="unique@email.com")
+        json_with_token = TestPosts.create_user()
+        header = {"Authorization": "Bearer " + json_with_token}
+        client = app.test_client()
+        data = {"liked": "True"}
+        resp = client.put('/api/12341234', data=json.dumps(data), headers=header, content_type='application/json')
+
+        assert resp.status_code == http.HTTPStatus.BAD_REQUEST
 
     def test_get_all_posts(self):
         TestPosts.create_post(name="1", email="some1@gmail.com")

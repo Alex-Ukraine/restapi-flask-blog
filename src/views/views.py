@@ -153,7 +153,6 @@ def login():
     user_schema = UserSchema(only=("email", "password"))
 
     params = request.json
-
     validation_errors = user_schema.validate(params)
     if validation_errors:
         return make_response(jsonify({'Message': f'error: {validation_errors}'}), 400)
