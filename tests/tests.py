@@ -3,7 +3,7 @@ import json
 import os
 import tempfile
 import unittest
-from app import app, Base, engine, session
+from src import app, Base, engine, session
 
 
 class TestPosts(unittest.TestCase):
@@ -90,6 +90,7 @@ class TestPosts(unittest.TestCase):
         json_with_token = TestPosts.create_user()
         TestPosts.create_post(name="name1", email="some1@gmail.com")
         TestPosts.create_post(name="name2", email="some2@gmail.com")
+        TestPosts.create_post(name="name3", email="some3@gmail.com")
 
         client = app.test_client()
         header = {"Authorization": "Bearer "+json_with_token}
@@ -98,6 +99,8 @@ class TestPosts(unittest.TestCase):
         data = {"liked": "True"}
         client.put('/api/1', data=json.dumps(data), headers=header, content_type='application/json')
         client.put('/api/2', data=json.dumps(data), headers=header, content_type='application/json')
+        data = {"unliked": "True"}
+        client.put('/api/3', data=json.dumps(data), headers=header, content_type='application/json')
 
         resp = client.get('/api/analytics', query_string=query_string, headers=header)
 
@@ -110,7 +113,7 @@ class TestPosts(unittest.TestCase):
         client = app.test_client()
         header = {"Authorization": "Bearer "+json_with_token}
         resp = client.get('/api/user-activity', headers=header)
-        print(resp.status_code)
+
         assert resp.status_code == http.HTTPStatus.OK
 
 
