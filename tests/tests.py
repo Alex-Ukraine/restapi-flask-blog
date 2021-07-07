@@ -144,6 +144,21 @@ class TestPosts(unittest.TestCase):
         assert resp.json == {"likes": 2}
         assert resp.status_code == http.HTTPStatus.OK
 
+    def test_get_analytics_wrong_dates(self):
+        json_with_token = TestPosts.create_user()
+        TestPosts.create_post(name="name1", email="some1@gmail.com")
+
+        client = app.test_client()
+        header = {"Authorization": "Bearer "+json_with_token}
+        query_string = {"date_from": "2022-07-02", "date_to": "2021-12-30"}
+
+        data = {"liked": "True"}
+        client.put('/api/1', data=json.dumps(data), headers=header, content_type='application/json')
+
+        resp = client.get('/api/analytics', query_string=query_string, headers=header)
+
+        assert resp.status_code == http.HTTPStatus.BAD_REQUEST
+
     def test_user_activity(self):
         json_with_token = TestPosts.create_user()
 
